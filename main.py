@@ -1,69 +1,110 @@
-import machine
+from machine import UART, Pin
 import time
-import urequests
+import ujson
 
-# Configure UART for communication with SIM800L
-uart = machine.UART(0, baudrate=9600, tx=0, rx=1)  # Pico GP0 (TX) to SIM800L RX, Pico GP1 (RX) to SIM800L TX
+with open('config.json') as config_file:
+    config_json = ujson.load(config_file)
 
-# Initialize SIM800L
-def init_sim800l():
-    uart.write("AT\r\n")
+# Configure UART
+uart = UART(0, baudrate=config_json['BAUDRATE'], tx=Pin(0), rx=Pin(1))
+
+
+def send_telegram_message(message):
+    payload = {
+        "chat_id": config_json['CHAT_ID'],
+        "text": message,
+    }
+    json_data = ujson.dumps(payload)
+    data_length = len(json_data)
+
+    uart.write('AT+CSQ\r\n')
+    time.sleep(2)
     response = uart.read()
-    if b'OK' in response:
-        print("SIM800L initialized successfully.")
-    else:
-        print("SIM800L initialization failed.")
-        return False
+    print(response)
 
-# Read SMS
+    uart.write('AT+CREG?\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+CGDCONT=1,"IP","'+config_json['APN']+'"\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+CGACT=1,1\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+HTTPINIT\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+HTTPPARA="URL","https://api.telegram.org/bot' +
+               config_json['BOT_TOKEN']+'/sendMessage"\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+HTTPPARA="CONTENT","application/json"\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+HTTPDATA={},10000\r\n'.format(data_length))
+    time.sleep(2)
+    uart.write(json_data)
+    time.sleep(2)
+    print(response)
+
+    uart.write('AT+HTTPACTION=1\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+HTTPHEAD\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+    uart.write('AT+HTTPTERM\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+
+
 def read_sms():
-    uart.write("AT+CMGF=1\r\n")  # Set SMS text mode
+    uart.write('AT+CMGF=1\r\n')  # Set SMS mode to text mode
     time.sleep(1)
-    uart.write("AT+CMGL=\"REC UNREAD\"\r\n")  # List unread messages
-    response = uart.read()
+    uart.write('AT+CMGL="REC UNREAD"\r\n')  # Read unread SMS messages
+    time.sleep(2)
+    response = uart.read()  # Read 512 bytes from UART buffer, adjust buffer size as needed
     return response
 
-# Send SMS content to Telegram bot
-def send_to_telegram_bot(message):
-    bot_token = "YOUR_TELEGRAM_BOT_TOKEN"
-    chat_id = "YOUR_CHAT_ID"
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": message
-    }
-    try:
-        response = urequests.post(url, json=payload, timeout=30)  # Adjust the timeout as needed
-        response.raise_for_status()  # Raise an exception for HTTP errors
-        return True
-    except Exception as e:
-        print("Error sending message to Telegram:", str(e))
-        return False
 
-# Mark SMS as read
-def mark_sms_as_read():
-    uart.write("AT+CMGDA=\"DEL READ\"\r\n")
-    time.sleep(1)
-
-# Main loop
-def main():
-    init_sim800l()
-    
-    while True:
-        sms_data = read_sms()
-        if sms_data:
-            # Extract SMS content from response
-            # You need to parse the response according to the AT command response format
-            sms_content = ...  # Extract the SMS content
-            
-            if sms_content:
-                if send_to_telegram_bot(sms_content):
-                    print("SMS forwarded to Telegram bot.")
-                    mark_sms_as_read()
-                else:
-                    print("Failed to forward SMS to Telegram bot.")
-            
-        time.sleep(30)  # Delay before checking for new SMS messages
-
-if __name__ == "__main__":
-    main()
+while True:
+    print('STARTED')
+    uart.write('ATI\r\n')
+    response = uart.read()
+    print(response)
+    sms_response = read_sms()
+    sms_messages = sms_response.decode('utf-8').split('+CMGL: ')[1:]
+    print(sms_messages)
+    for sms_message in sms_messages:
+        message_lines = sms_message.split('\r\n')
+        number = message_lines[0].split(',')[2].replace('"', '')
+        timestamp = message_lines[0].split(',')[4].replace('"', '')
+        message = message_lines[1]
+        formatted_message = "From: {} Time: {} Message: {}".format(
+            number, timestamp, message)
+        send_telegram_message(formatted_message)
+        sms_index = message_lines[0].split(',')[0]
+        uart.write('AT+CMGD={}\r\n'.format(sms_index))
+        time.sleep(1)
+    uart.write('AT+CMGD=1,4\r\n')
+    time.sleep(2)
+    response = uart.read()
+    print(response)
+    time.sleep(10)
