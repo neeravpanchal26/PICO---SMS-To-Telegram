@@ -13,6 +13,7 @@ def send_telegram_message(message):
     payload = {
         "chat_id": config_json['CHAT_ID'],
         "text": message,
+        "parse_mode": "HTML"
     }
     json_data = ujson.dumps(payload)
     data_length = len(json_data)
@@ -76,19 +77,15 @@ def send_telegram_message(message):
 
 
 def read_sms():
-    uart.write('AT+CMGF=1\r\n')  # Set SMS mode to text mode
+    uart.write('AT+CMGF=1\r\n')
     time.sleep(1)
-    uart.write('AT+CMGL="REC UNREAD"\r\n')  # Read unread SMS messages
+    uart.write('AT+CMGL="REC UNREAD"\r\n')
     time.sleep(2)
-    response = uart.read()  # Read 512 bytes from UART buffer, adjust buffer size as needed
+    response = uart.read()
     return response
 
 
 while True:
-    print('STARTED')
-    uart.write('ATI\r\n')
-    response = uart.read()
-    print(response)
     sms_response = read_sms()
     sms_messages = sms_response.decode('utf-8').split('+CMGL: ')[1:]
     print(sms_messages)
@@ -97,7 +94,7 @@ while True:
         number = message_lines[0].split(',')[2].replace('"', '')
         timestamp = message_lines[0].split(',')[4].replace('"', '')
         message = message_lines[1]
-        formatted_message = "From: {} Time: {} Message: {}".format(
+        formatted_message = "<b>From:</b> {}\n<b>Time:</b> {}\n<b>Message:</b> {}".format(
             number, timestamp, message)
         send_telegram_message(formatted_message)
         sms_index = message_lines[0].split(',')[0]
