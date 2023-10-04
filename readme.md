@@ -1,4 +1,4 @@
-# SMS T Telegram Channel.
+# SMS To Telegram Channel.
 
 A brief description of the project goes here.
 
