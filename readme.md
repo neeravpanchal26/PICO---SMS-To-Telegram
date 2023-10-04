@@ -1,7 +1,4 @@
 # SMS To Telegram Channel.
-
-A brief description of the project goes here.
-
 ## Overview
 
 This project utilizes Raspberry Pi Pico and SIMCOM A7670C Board to achieve a specific functionality (describe briefly what the project does). The code provided in `main.py` and `A7670C.py` enables the communication between the Raspberry Pi Pico and the SIMCOM A7670C Board using UART communication. The project is designed to (briefly describe the main purpose or functionality of the project).
