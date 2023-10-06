@@ -1,52 +1,50 @@
-# SMS To Telegram Channel.
-## Overview
+# Raspberry Pi Pico GSM SMS Receiver
 
-This project utilizes Raspberry Pi Pico and SIMCOM A7670C Board to achieve a specific functionality (describe briefly what the project does). The code provided in `main.py` and `A7670C.py` enables the communication between the Raspberry Pi Pico and the SIMCOM A7670C Board using UART communication. The project is designed to (briefly describe the main purpose or functionality of the project).
-
-## Devices Used
-
-- Raspberry Pi Pico - [Raspberry Pi Pico Product Page](https://www.raspberrypi.com/products/raspberry-pi-pico/)
-- SIMCOM A7670C Board - [SIMCOM A7670C Product Page](https://www.graylogix.in/product/sim-a7670c-4g-lte-ttl-modem)
+This project demonstrates how to receive SMS messages using a Raspberry Pi Pico and a GSM module. The code provided here allows you to interact with a GSM module (A7670C) and receive SMS messages. The received messages are then sent to a specified Telegram chat using the Telegram Bot API.
 
 ## Prerequisites
-
-Make sure you have the following components before running the code:
-
-- Raspberry Pi Pico
-- SIMCOM A7670C Board
-- `config.json` file containing necessary configuration parameters (ignored by .gitignore)
-
-## How to Use
-
-1. **Setup**
-
-   - Connect Raspberry Pi Pico and SIMCOM A7670C Board according to the provided documentation.
-   - Ensure `config.json` file is properly configured with the required parameters.
-
-2. **Running the Code**
-   - Upload `main.py` and `A7670C.py` to your Raspberry Pi Pico.
-   - Run `main.py` on your Raspberry Pi Pico.
+- [Raspberry Pi Pico](https://www.raspberrypi.com/products/raspberry-pi-pico/)
+- [GSM Board (A7670C)](https://www.graylogix.in/product/sim-a7670c-4g-lte-ttl-modem)
 
 ## Configuration
+Create a `config.json` file in the project directory with the following content (replace the placeholder values with actual values, omit confidential values):
 
-The `config.json` file contains the following parameters:
+```json
+{
+	"BOT_TOKEN": "YOUR_TELEGRAM_BOT_TOKEN",
+	"CHAT_ID": "YOUR_TELEGRAM_CHAT_ID",
+	"BAUDRATE": 115200,
+	"UART_INTERFACE": 0,
+	"TX_PIN": 0,
+	"RX_PIN": 1,
+	"APN": "YOUR_APN_NAME"
+}
+```
 
-- `BOT_TOKEN`: Telegram bot token used for communication.
-- `CHAT_ID`: Chat ID of the recipient for Telegram messages.
-- `BAUDRATE`: Baud rate for UART communication.
-- `UART_INTERFACE`: UART interface used for communication.
-- `TX_PIN`: Pin number for transmitting data.
-- `RX_PIN`: Pin number for receiving data.
-- `APN`: Access Point Name for mobile network connection.
+- `BOT_TOKEN`: Your Telegram Bot token obtained from the BotFather.
+- `CHAT_ID`: The chat ID of the Telegram chat where you want to receive SMS notifications.
+- `BAUDRATE`: Baud rate for UART communication with the GSM module (e.g., 115200).
+- `UART_INTERFACE`: UART interface number on the Raspberry Pi Pico (e.g., 0 for UART0).
+- `TX_PIN`: GPIO pin used for transmitting data to the GSM module.
+- `RX_PIN`: GPIO pin used for receiving data from the GSM module.
+- `APN`: Access Point Name for your mobile network provider (e.g., "JioNet" for Jio network).
 
-## Code Explanation
+## How it Works
+1. The `A7670C.py` module provides a Python class `A7670C` that communicates with the GSM module via UART. It includes methods to execute AT commands, perform HTTP POST requests, and handle GSM responses.
 
-The `main.py` file contains the main logic of the project. It initializes communication with the SIMCOM A7670C Board, checks for unread SMS messages, sends the messages to a Telegram chat, and deletes the read messages.
+2. The `main.py` script initializes the GSM module and continuously checks for unread SMS messages. When a new SMS is received, it is formatted and sent to the specified Telegram chat using the Telegram Bot API.
 
-The `A7670C.py` file contains the class `A7670C` that handles communication with the SIMCOM A7670C Board using UART.
+## Setup
+1. Connect the Raspberry Pi Pico to the GSM module (A7670C) using appropriate wiring for UART communication (TX, RX pins).
+2. Configure the `config.json` file with the necessary parameters as described above.
 
-## Important Notes
+## Usage
+Run the `main.py` script to start the SMS receiver. The script will continuously check for new SMS messages and send them to the specified Telegram chat in real-time.
 
-- Make sure to handle sensitive information such as API tokens and access credentials securely.
-- Ensure proper connections between Raspberry Pi Pico and SIMCOM A7670C Board to avoid communication issues.
-- Refer to the official documentation of Raspberry Pi Pico and SIMCOM A7670C Board for detailed setup and troubleshooting.
+```bash
+python main.py
+```
+
+**Note:** Ensure that you have internet connectivity and the necessary permissions for sending SMS and accessing the Telegram API.
+
+Feel free to contribute and open issues if you encounter any problems. Happy coding!
