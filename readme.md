@@ -41,7 +41,7 @@ Create a `config.json` file in the project directory with the following content 
 ## Usage
 `main.py` script to start the SMS receiver. The script will continuously check for new SMS messages and send them to the specified Telegram chat in real-time.
 
-![Image](https://github.com/neeravpanchal26/PICO---SMS-To-Telegram/blob/main/Images/1.jpg)
+![Image](https://raw.githubusercontent.com/neeravpanchal26/PICO---SMS-To-Telegram/main/Images/1.png)
 
 **Note:** Ensure that you have internet connectivity and the necessary permissions for sending SMS and accessing the Telegram API.
 
