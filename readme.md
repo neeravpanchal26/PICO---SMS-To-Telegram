@@ -40,7 +40,7 @@ Create a `config.json` file in the project directory with the following content 
 
 ## Usage
 `main.py` script to start the SMS receiver. The script will continuously check for new SMS messages and send them to the specified Telegram chat in real-time.
-
+![Image](https://github.com/username/repository/raw/main/image.jpg)
 **Note:** Ensure that you have internet connectivity and the necessary permissions for sending SMS and accessing the Telegram API.
 
 Feel free to contribute and open issues if you encounter any problems. Happy coding!
