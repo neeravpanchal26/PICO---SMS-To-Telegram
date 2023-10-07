@@ -39,11 +39,7 @@ Create a `config.json` file in the project directory with the following content 
 2. Configure the `config.json` file with the necessary parameters as described above.
 
 ## Usage
-Run the `main.py` script to start the SMS receiver. The script will continuously check for new SMS messages and send them to the specified Telegram chat in real-time.
-
-```bash
-python main.py
-```
+`main.py` script to start the SMS receiver. The script will continuously check for new SMS messages and send them to the specified Telegram chat in real-time.
 
 **Note:** Ensure that you have internet connectivity and the necessary permissions for sending SMS and accessing the Telegram API.
 
